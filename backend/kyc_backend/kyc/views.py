@@ -2,6 +2,7 @@
 from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.db.models import Q, Count
 from django.utils import timezone
@@ -15,9 +16,12 @@ from .serializers import (
 from .permissions import IsKYCOfficer, IsComplianceOfficer
 import hashlib
 
+
 class CustomerViewSet(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated]
-    
+    permission_classes = [permissions.AllowAny]
+    queryset = Customer.objects.all()
+    serializer_class = CustomerListSerializer
+
     def get_queryset(self):
         queryset = Customer.objects.select_related(
             'individual_details', 'corporate_details', 'reviewed_by',
@@ -414,3 +418,50 @@ class AuditTrailViewSet(viewsets.ReadOnlyModelViewSet):
             queryset = queryset.filter(timestamp__lte=end_date)
         
         return queryset
+    
+class BulkAssignView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        # Your bulk assignment logic here
+        return Response({"message": "Bulk assignment successful"}, status=status.HTTP_200_OK)  
+
+class BulkResolveAlertsView(APIView):
+    def post(self, request):
+        # Your logic here
+        return Response({"message": "Alerts resolved"})  
+    
+class KYCSummaryReportView(APIView):
+    def get(self, request):
+        # Your summary logic here
+        return Response({"summary": "KYC report data"})
+    
+
+class ComplianceMetricsView(APIView):
+    def get(self, request):
+        metrics = {
+            "total_customers": Customer.objects.count(),
+            "flagged": Customer.objects.filter(flagged=True).count(),
+            "pending_review": Customer.objects.filter(status="pending").count(),
+            "high_risk": Customer.objects.filter(risk_level="high").count(),
+        }
+        return Response(metrics)
+    
+class SanctionsWebhookView(APIView):
+    def post(self, request):
+        # Example: handle incoming sanctions data
+        payload = request.data
+        # Process the payload here...
+        return Response({"status": "received"}, status=status.HTTP_200_OK)
+    
+class ExternalRiskAssessmentView(APIView):
+    def post(self, request):
+        risk_score = request.data.get("risk_score")
+        customer_id = request.data.get("customer_id")
+
+        if not risk_score or not customer_id:
+            return Response({"error": "Missing data"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Save or process the risk score here...
+
+        return Response({"status": "processed"}, status=status.HTTP_200_OK)

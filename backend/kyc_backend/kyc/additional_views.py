@@ -1,4 +1,8 @@
 # additional_views.py - Additional API views for KYC operations
+from backend.kyc_backend.kyc import models
+from backend.kyc_backend.kyc import permissions
+from backend.kyc_backend.kyc.models import AuditTrail, ComplianceAlert, Customer, Document
+from backend.kyc_backend.kyc.permissions import IsComplianceOfficer, IsKYCOfficer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status

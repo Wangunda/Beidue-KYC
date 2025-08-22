@@ -1,6 +1,7 @@
 // App.tsx
 import React from "react";
-import KYCApp from "./components/KYCApp";
+import KYCApp from "./KYCApp";
+
 
 
 const App: React.FC = () => {
